@@ -9,7 +9,7 @@ object NorvigSpellChecker {
 
   val NWORDS = train(Source.fromFile("big.txt").getLines.mkString.toLowerCase)
 
-  def known(words:Set[String]) = {Set.empty ++ (for(w <- words if NWORDS contains w) yield w)}
+  def known(words:Set[String]) = {println("known %s" format words); Set.empty ++ (for(w <- words if NWORDS contains w) yield w)}
 
   def edits1(word:String) = {
     Set.empty ++
@@ -21,10 +21,15 @@ object NorvigSpellChecker {
 
   def known_edits2(word:String) = {Set.empty ++ (for (e1 <- edits1(word); e2 <- edits1(e1) if NWORDS contains e2) yield e2)}
 
-  def correct(word:String) = {
-    val options = Seq(() => known(Set(word)), () => known(edits1(word)), () => known_edits2(word), () => Set(word))
-    val candidates = options.foldLeft(Set[String]()) {(a, b) => if (a.isEmpty) b() else a}
-    candidates.foldLeft("") {(a, b) => if (NWORDS(a) > NWORDS(b)) a else b}
+  def correct(word: String) = {
+    import Stream._
+
+    val str = cons(known(Set(word)), cons(known(edits1(word)), cons(known_edits2(word), empty)))
+
+    str find { !_.isEmpty } match {
+      case Some(candidates) => candidates.reduceLeft { (res, n) => if (NWORDS(res) > NWORDS(n)) res else n }
+      case None => word
+    }
   }
 }
 
