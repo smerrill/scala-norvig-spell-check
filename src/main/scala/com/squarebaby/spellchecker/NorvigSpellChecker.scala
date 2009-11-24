@@ -22,11 +22,11 @@ object NorvigSpellChecker {
   def known_edits2(word:String) = {Set.empty ++ (for (e1 <- edits1(word); e2 <- edits1(e1) if NWORDS contains e2) yield e2)}
 
   def correct(word: String) = {
-    import Stream._
+    val sets = List[String => Set[String]](
+      x => known(Set(x)), x => known(edits1(x)), known_edits2
+    ).elements.map(_(word))
 
-    val str = cons(known(Set(word)), cons(known(edits1(word)), cons(known_edits2(word), empty)))
-
-    str find { !_.isEmpty } match {
+    sets find { !_.isEmpty } match {
       case Some(candidates) => candidates.reduceLeft { (res, n) => if (NWORDS(res) > NWORDS(n)) res else n }
       case None => word
     }
