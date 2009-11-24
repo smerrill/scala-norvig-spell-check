@@ -9,7 +9,7 @@ object NorvigSpellChecker {
 
   val NWORDS = train(Source.fromFile("big.txt").getLines.mkString.toLowerCase)
 
-  def known(words:Set[String]) = {println("known %s" format words); Set.empty ++ (for(w <- words if NWORDS contains w) yield w)}
+  def known(words:Set[String]) = {Set.empty ++ (for(w <- words if NWORDS contains w) yield w)}
 
   def edits1(word:String) = {
     Set.empty ++
